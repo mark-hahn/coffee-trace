@@ -28,13 +28,13 @@ class CoffeeTrace
     rowIdx      = selRange.end.row
     line        = @buffer.lineForRow rowIdx
     @lineBufPos = @buffer.characterIndexForPosition [rowIdx, 0]
-    console.log 'toggle', {@pixelTop, rowIdx, @lineBufPos, line} 
+    # console.log 'toggle', {@pixelTop, rowIdx, @lineBufPos, line} 
     
     if (parts = /(\([^\)]*\))?\s*(-|=)>/.exec line)
       @addTraceFunc()
-      console.log parts
+      # console.log parts
       funcOfs  = /(-|=)>/.exec(line).index
-      compCode = @compressedText line, funcOfs+2, compCodeLen
+      compCode = @compressedText line, compCodeLen, funcOfs+2
       defOfs = @lineBufPos + parts.index
       @text = @text[...defOfs] + ' cT("' +
               compCode + '~' + (rowIdx+1) + 'fcT") ' +
@@ -44,13 +44,12 @@ class CoffeeTrace
       
     console.log 'coffee-trace: no position found for trace call'
     
-  compressedText: (text, pos, len) ->
-    compText = text[...pos].replace /[\s'"~]/g, ''
-    if (txtLen = compText.length) > len
-      halfLen = len/2 - 1
-      return compText[...halfLen] + '..' + compText[txtLen-halfLen...]
-    while compText.length < len then compText = compText + ' '
-    text
+  compressedText: (text, len, pos) ->
+    console.log @done
+    compText = (if pos then text[...pos].replace(/[\s'"~]/g, '')[-len...]
+    else text.replace(/[\s'"~]/g, '')[...len])
+    while compText.length < len then compText += ' '
+    compText
   
   addTraceFunc: ->
     if not /function\scT\(/.test @text
@@ -63,11 +62,53 @@ class CoffeeTrace
       @text = @text[...idx] + '\n' + @text[idx+len...]
       
   done: -> 
+    @buffer.setText @text
     process.nextTick => 
       @editorView.scrollTop @pixelTop
       @editor.setCursorScreenPosition @cursScrPos
-    @buffer.setText @text
   
   deactivate: ->
 
 module.exports = new CoffeeTrace
+
+
+`
+/*
+  automatically inserted coffee-trace function
+ */
+function cT(info) {//;
+var file, fileParts, infoParts, line, lineArr,
+  __slice = [].slice;
+
+fileParts = /(\\|\/)([^\\/]*)\.[^\.]*$/.exec(__filename);
+
+file = (fileParts ? fileParts[2] : '');
+
+infoParts = info.split('~');
+
+line = ':' + infoParts[1].slice(0, -3);
+
+file = file.slice(0, 15 - line.length) + line;
+
+while (file.length < 15) {
+  file += ' ';
+}
+
+lineArr = [file, infoParts[0]];
+
+return function(funcIn) {
+  return function() {
+    var args, date, s100, secs;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    date = new Date();
+    secs = date.getSeconds();
+    secs = '' + (secs < 10 ? '0' + secs : secs);
+    s100 = Math.floor(date.getMilliseconds() / 10);
+    s100 = '' + (s100 < 10 ? '0' + s100 : s100);
+    console.log.apply(console, [secs + '.' + s100].concat(__slice.call(lineArr), [args]));
+    return funcIn.call.apply(funcIn, [this].concat(__slice.call(args)));
+  };
+};
+
+};
+`
