@@ -13,18 +13,20 @@ type = infoParts[1][-3..-3]
 file = file[...(15 - line.length)] + line
 while file.length < 15 then file += ' '
 
-return (arg) ->
+pfx = ->
   date = new Date()
   secs = date.getSeconds()
   secs = '' + (if secs < 10 then '0' + secs else secs)
   s100 = Math.floor date.getMilliseconds() / 10
   s100 = '' + (if s100 < 10 then '0' + s100 else s100)
-  pfx = secs + '.' + s100 + ' ' + file + ' (' + snip + ')'
+  secs + '.' + s100 + ' ' + file + ' (' + snip + ')'
+
+return (arg) ->
   if type is 'f' 
     (args...) -> 
-      console.log pfx, args
+      console.log pfx(), args
       arg.apply @, args
   else 
-    console.log pfx, [arg]
+    console.log pfx(), [arg]
     arg
 `}`
