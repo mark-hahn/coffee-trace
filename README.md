@@ -32,10 +32,10 @@ The trace function `cT()` is added to the bottom of the source file.  It is in j
 
 # The Console Output
 
-    43.76 coffee-trace:18 (toggle:                   ) [] 
-    48.63 coffee-trace:31 (@buffer=                  ) [TextBuffer]
-    48.63 coffee-trace:32 (@text=                    ) ["hello world"]
-    49.76 coffee-trace:78 (dText:text,len,pos->~78fcT) ["more text", 20, 10] 
+    43.76 coffee-trace:18 (toggle:             ) [] 
+    48.63 coffee-trace:31 (@buffer=            ) [TextBuffer]
+    48.63 coffee-trace:32 (@text=              ) ["hello world"]
+    49.76 coffee-trace:78 (dText:text,len,pos->) ["more text", 20, 10] 
     
 Each trace line in the console has these parts aligned in columns.
 
