@@ -15,6 +15,8 @@ Multiple source files can have trace statements at the same time.  In the sample
 
 After adding the trace calls you must reload Atom to run your package and see the trace output.
 
+A trace log `coffee-trace.log` will be added to the folder the source file is in and will have the same contents as the console.log output.  There will be a configuration option to turn this off in a future version.
+
 # The Trace Calls Inserted
 The function trace calls and assignment trace calls inserted look like ...
     

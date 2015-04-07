@@ -7,14 +7,21 @@ fs     = require 'fs'
 path   = require 'path'
 coffee = require 'coffee-script'
 
-class CoffeeTrace
+module.exports =
+  config:
+    logToFile:
+      type: 'boolean'
+      default: no
 
   activate: ->
     console.log 'coffee-trace activated'
-    traceFuncCS  = fs.readFileSync(__dirname + '/trace-func.coffee').toString()
+    traceFuncCS  = fs.readFileSync __dirname + '/trace-func.coffee', 'utf8'
+    ## hard-wired this because I cannot get config to show in settings
+    if false and not atom.config.get 'coffee-trace.logToFile'
+      traceFuncCS = traceFuncCS.replace /#log2fileBodyStart#.*#log2fileBodyEnd#/, ''
     @traceFuncJS = '\n\n`' + coffee.compile(traceFuncCS, {bare:yes}) + '`\n'
     atom.workspaceView.command "coffee-trace:toggle", => @toggle()
-
+ 
   toggle: ->
     if not (@editorView = atom.workspaceView.getActiveView())       or
 	     not (@editor = @editorView.getEditor?())                     or
@@ -50,8 +57,9 @@ class CoffeeTrace
       @addTraceFunc()
       compCode  = @compressedText line, compCodeLen, ofs+2
       bufInsOfs = @lineBufPos + ofs
-      if (parts = /\([^\(]*\)\s*$/.exec line[...ofs]) then bufInsOfs -= parts[0].length
-      @text = @text[...bufInsOfs] + ' cT("' +
+      if (parts = /\([^\(]*\)\s*$/.exec line[...ofs])
+        bufInsOfs -= parts[0].length
+      @text = @text[...bufInsOfs] + 'cT("' +
               compCode + '~' + (rowIdx+1) + 'fcT") ' +
               @text[bufInsOfs...]
       @done()
@@ -68,7 +76,7 @@ class CoffeeTrace
       compCode = @compressedText line, compCodeLen, ofs
       bufOfs = @lineBufPos + ofs
       @text  = @text[...bufOfs] + ' cT("' +
-              compCode + '~' + (rowIdx+1) + 'acT") ' +
+              compCode + '~' + (rowIdx+1) + 'acT")' +
               @text[bufOfs...]
       @done()
       return
@@ -81,12 +89,13 @@ class CoffeeTrace
     compText
     
   chkRemove: (lineBufPos, cursOfs, line) ->
-    if (parts = /\s*cT\("[^\)]*cT"\)/.exec line)
-      bufOfsStart =   @lineBufPos + parts.index
+    if (parts = /(\s*?)\s?cT\("[^\)]*cT"\)/.exec line)
+      bufOfsStart = @lineBufPos + parts.index
+      bufOfsIns   = bufOfsStart + parts[1].length
       bufOfsEnd   = bufOfsStart + parts[0].length
       if not (bufOfsStart <= (lineBufPos + cursOfs) < bufOfsEnd) then return
-      @text =  @text[...bufOfsStart] + @text[bufOfsEnd...]
-      if not /\s*cT\("[^\)]*cT"\)/.test @text
+      @text = @text[...bufOfsIns] + @text[bufOfsEnd...]
+      if not /cT\("[^\)]*cT"\)/.test @text
         @removeTraceFunc()
       @done()
       return yes
@@ -118,5 +127,3 @@ class CoffeeTrace
       @editor.setCursorScreenPosition @cursScrPos
   
   deactivate: ->
-
-module.exports = new CoffeeTrace
