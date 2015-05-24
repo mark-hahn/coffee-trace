@@ -14,7 +14,7 @@ module.exports =
       default: no
 
   activate: ->
-    console.log 'coffee-trace activated'
+    # console.log 'coffee-trace activated'
     traceFuncCS  = fs.readFileSync __dirname + '/trace-func.coffee', 'utf8'
     ## hard-wired this because I cannot get config to show in settings
     if false and not atom.config.get 'coffee-trace.logToFile'
