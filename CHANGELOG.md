@@ -1,3 +1,7 @@
+### version 0.221  4/26/2015
+
+- updated config format
+
 ### version 0.2.1  4/23/2015
 
 - updated config format
