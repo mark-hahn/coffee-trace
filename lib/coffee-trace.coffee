@@ -20,20 +20,19 @@ module.exports =
     if false and not atom.config.get 'coffee-trace.logToFile'
       traceFuncCS = traceFuncCS.replace /#log2fileBodyStart#.*#log2fileBodyEnd#/, ''
     @traceFuncJS = '\n\n`' + coffee.compile(traceFuncCS, {bare:yes}) + '`\n'
-    atom.workspaceView.command "coffee-trace:toggle", => @toggle()
- 
+    atom.commands.add 'atom-text-editor', "coffee-trace:toggle", => @toggle()  
+
   toggle: ->
-    if not (@editorView = atom.workspaceView.getActiveView())       or
-	     not (@editor = @editorView.getEditor?())                     or
-  	   not (selRange = @editor.getSelectedBufferRange())            or 
-       not selRange.isSingleLine()                                  or
-       path.extname(@editor.getUri()).toLowerCase() isnt '.coffee'
+    if not (@editor = atom.workspace.getActiveTextEditor()) or
+  	   not (selRange = @editor.getSelectedBufferRange())    or 
+       not selRange.isSingleLine()                          or
+       path.extname(@editor.getPath()).toLowerCase() isnt '.coffee'
       return
     
     cursBufPos  = selRange.end
     rowIdx      = cursBufPos.row
-    topLine     = @editorView.getFirstVisibleScreenRow()
-    @pixelTop   = @editorView.pixelPositionForScreenPosition([topLine, 0]).top
+    topLine     = @editor.getFirstVisibleScreenRow()
+    @pixelTop   = @editor.pixelPositionForScreenPosition([topLine, 0]).top
     @cursScrPos = @editor.getCursorScreenPosition()
     @buffer     = @editor.getBuffer()
     @text       = @buffer.getText()
@@ -123,7 +122,7 @@ module.exports =
   done: -> 
     @buffer.setText @text
     process.nextTick => 
-      @editorView.scrollTop @pixelTop
+      @editor.scrollToScreenPosition @pixelTop
       @editor.setCursorScreenPosition @cursScrPos
   
   deactivate: ->

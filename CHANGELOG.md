@@ -1,4 +1,8 @@
-### version 0.221  4/26/2015
+### version 0.2.7  10/18/2015
+
+- fixed deprecations
+
+### version 0.2.2  4/26/2015
 
 - updated config format
 
